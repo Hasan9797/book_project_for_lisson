@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const { v4 } = require('uuid');
 const route = Router();
 const fs = require('fs');
 const path = require('path');
@@ -7,7 +6,7 @@ const path = require('path');
 function getAll() {
 	return new Promise((resolve, reject) => {
 		fs.readFile(
-			path.join(__dirname, '..', 'data.json'),
+			path.join(__dirname, '..', 'db', 'data.json'),
 			'utf-8',
 			(err, data) => {
 				if (err) {
@@ -20,27 +19,11 @@ function getAll() {
 	});
 }
 
-route.post('/', async (req, res) => {
-	const books = await getAll();
-	books.push({ id: v4(), ...req.body }); // til: bok , auth: davlat
+const { addBook, getAllBook } = require('../controllers/book');
 
-	fs.writeFile(
-		path.join(__dirname, '..', 'data.json'),
-		JSON.stringify(books),
-		err => {
-			if (err) {
-				res.end('<h1>Kitob yuklanmadi</h1>');
-			} else {
-				res.redirect('/book');
-			}
-		}
-	);
-});
+route.post('/', addBook);
 
-route.get('/', async (req, res) => {
-	const book = await getAll();
-	res.render('book', { title: 'Books', book });
-});
+route.get('/', getAllBook);
 
 route.post('/id', async (req, res) => {
 	const book = await getAll();
@@ -54,7 +37,7 @@ route.post('/update', async (req, res) => {
 	data.push(req.body);
 
 	fs.writeFile(
-		path.join(__dirname, '..', 'data.json'),
+		path.join(__dirname, '..', 'db', 'data.json'),
 		JSON.stringify(data),
 		err => {
 			if (err) {
@@ -68,10 +51,10 @@ route.post('/update', async (req, res) => {
 
 route.get('/delete/:id', async (req, res) => {
 	const books = await getAll();
-	const data = books.filter((book) => book.id !== req.params.id)
-	
+	const data = books.filter(book => book.id !== req.params.id);
+
 	fs.writeFile(
-		path.join(__dirname, '..', 'data.json'),
+		path.join(__dirname, '..', 'db', 'data.json'),
 		JSON.stringify(data),
 		err => {
 			if (err) {
@@ -81,6 +64,6 @@ route.get('/delete/:id', async (req, res) => {
 			}
 		}
 	);
-})
+});
 
 module.exports = route;
