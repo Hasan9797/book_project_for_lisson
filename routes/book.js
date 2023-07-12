@@ -13,7 +13,7 @@ route.post('/', addBook);
 
 route.get('/', getAllBook);
 
-route.post('/id', getByIdBookforUpdate);
+route.get('/upId/:id', getByIdBookforUpdate);
 
 route.post('/update', updateBook);
 

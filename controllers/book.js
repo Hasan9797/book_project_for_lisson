@@ -1,28 +1,35 @@
-const Book = require('../model/book');
-const fs = require('fs');
-const path = require('path');
+const { books } = require('../model/index');
 
 const addBook = async (req, res) => {
-	const { title, author, page, price } = req.body;
-	const book = new Book(title, author, page, price);
+	const { title, author, page, price, img } = req.body;
+	const book = await books.create({
+		title: title,
+		author: author,
+		page: page,
+		price: price,
+		img: img,
+	});
 	await book.save();
 	res.redirect('/book');
 };
 
 const getAllBook = async (req, res) => {
-	const book = await Book.getAll();
+	const book = await books.findAll({ raw: true });
 	res.render('book', { title: 'Books', book });
 };
 
 const getByIdBookforUpdate = async (req, res) => {
-	const books = await Book.getAll();
-	const data = books.find(book => book.id === req.body.id);
-	res.render('updateBook', { title: 'Update Book', data });
+	const book = await books.findByPk(req.params.id);
+	res.render('updateBook', { title: 'Update Book', data: book.dataValues });
 };
 
 const updateBook = async (req, res) => {
 	try {
-		await Book.update(req.body);
+		await books.update(req.body, {
+			where: {
+				id: req.body.id,
+			},
+		});
 		res.redirect('/book');
 	} catch (error) {
 		console.log(error);
@@ -32,7 +39,11 @@ const updateBook = async (req, res) => {
 
 const deleteBook = async (req, res) => {
 	try {
-		await Book.deleteBook(req.params.id);
+		await books.destroy({
+			where: {
+				id: req.params.id,
+			},
+		});
 		res.redirect('/book');
 	} catch (error) {
 		res.send(`<h1>Ma'lumot o'chirilmadi</h1>`);
